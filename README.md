@@ -48,20 +48,39 @@ El análisis fue desarrollado siguiendo las buenas prácticas de EDA e incluye:
 - Revisión de tipos de datos, valores nulos y estadísticas básicas.
 
  ![estadísticas básicas](images/describe.png)
+
+ Realizando un analisis de los datos. 
+ 
  ![datos nulos](images/info.png)
 
 No hay datos faltantes y podemos decir que hay unos valores atípicos los cuales es bueno analizar.
 
 ### 🔎 Agrupación de la calidad
 
-Para facilitar el modelado y el análisis de clases balanceadas, se agruparon los valores de la variable quality:
+Inicialmente, la variable `quality` presentaba una distribución desequilibrada, con la mayoría de los vinos concentrados en calificaciones intermedias. Esta situación podía afectar negativamente el desempeño de los modelos de clasificación, ya que una distribución sesgada tiende a sesgar también las predicciones del modelo hacia las clases mayoritarias.
 
-- 1 = Media calidad (calificaciones de 1 a 5)
-- 2 = Alta calidad (calificaciones de 6 a 10)
+Para abordar este problema y lograr un análisis más balanceado y robusto, se decidió **agrupar las calificaciones de `quality`** en dos categorías principales:
 
-Esta clasificación mejora la interpretación y balancea mejor las clases para modelos supervisados.
-![Histograma de calidad del vino](images/quality_distribution.png)
-![agrupados](images/quality2.png)
+- **Vino de baja calidad** (etiquetado como `1`)
+- **Vino de alta calidad** (etiquetado como `2`)
+
+Esta agrupación no solo simplificó el problema de clasificación, sino que también permitió mejorar el balance entre las clases, lo cual es fundamental para modelos más precisos y generalizables.
+
+A continuación se presentan dos histogramas comparativos: el primero muestra la distribución original de `quality`, y el segundo la distribución después de la transformación:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="images/quality_distribution.png" alt="Histograma de calidad del vino" width="400"/>
+      <p><em>Antes de transformar <code>quality</code></em></p>
+    </td>
+    <td align="center">
+      <img src="images/agrupados.png" alt="Después de agrupar quality" width="400"/>
+      <p><em>Después de transformar <code>quality</code></em></p>
+    </td>
+  </tr>
+</table>
+
 
 
 #### ✅ Tratamiento de outliers
@@ -99,19 +118,26 @@ Este comportamiento indica que variables como el alcohol, el pH, los sulfitos y 
 
 Entre las variables más relevantes que mostraron patrones claros en su distribución se encuentran:
 
--**Alcohol vs pH**
- ![grafica 1](images/alcoholVSph.png)
+<table>
+  <tr>
+    <td align="center">
+      <img src="images/citicacidVSalcohol.png" alt="Citric Acid vs Alcohol" width="300"/>
+      <p><em>Citric Acid vs Alcohol</em></p>
+    </td>
+    <td align="center">
+      <img src="images/volatileacidityVSph.png" alt="Volatile Acidity vs pH" width="300"/>
+      <p><em>Volatile Acidity vs pH</em></p>
+    </td>
+    <td align="center">
+      <img src="images/volatileacidityVSsulphates.png" alt="Volatile Acidity vs Sulphates" width="300"/>
+      <p><em>Volatile Acidity vs Sulphates</em></p>
+    </td>
+  </tr>
+</table>
 
--**Alcohol vs Sulphates**
- ![grafica 2](images/sulphates.png)
- 
--**Density vs Total Sulfur Dioxide**
- ![grafica 3](images/densityVStotalsulfurdioxide.png)
+*Nota: A continuación se muestran únicamente algunas de las visualizaciones. Para acceder al conjunto completo de gráficos, consulta el proyecto en Google Colab.*
 
--**Alcohol vs Free Sulfur Dioxide**
- ![grafica 4](images/alcoholVSfreesulfurdioxide.png)
-
-Estas gráficas permitieron identificar rangos y comportamientos típicos de vinos de mayor o menor calidad, sentando las bases para un análisis bivariado más profundo y una futura etapa de modelado predictivo.
+Estas gráficas permitieron identificar rangos y comportamientos típicos de vinos de mayor o menor calidad, sentando las bases para un análisis bivariado más profundo y una futura etapa de modelado predictivo. 
 
 ### 🧪 Ingeniería de características
 Se crearon nuevas variables derivadas a partir de las características originales, para explorar su impacto en la predicción de calidad del vino:
@@ -147,7 +173,7 @@ Además, se generó un **heatmap de correlación** entre todas las variables num
 Estas relaciones serán fundamentales para los siguientes pasos del análisis y permitirán construir modelos más interpretables y precisos.
 
 
-![Heatmap de correlaciones](images/heatmap_correlations.png)
+![Heatmap de correlaciones](images/mapacorrelacion.png)
 
 ## 🔍 Análisis de Correlación - Mapa de Calor
 
