@@ -56,9 +56,8 @@ No hay datos faltantes y podemos decir que hay unos valores atípicos los cuales
 
 Para facilitar el modelado y el análisis de clases balanceadas, se agruparon los valores de la variable quality:
 
-- 0 = Baja calidad (calificaciones de 3 a 4)
-- 1 = Media calidad (calificaciones de 5 a 6)
-- 2 = Alta calidad (calificaciones de 7 a 8)
+- 1 = Media calidad (calificaciones de 1 a 5)
+- 2 = Alta calidad (calificaciones de 6 a 10)
 
 Esta clasificación mejora la interpretación y balancea mejor las clases para modelos supervisados.
 ![Histograma de calidad del vino](images/quality_distribution.png)
@@ -203,14 +202,115 @@ variables_select= [
     'acidez_ratio',         # Buena correlación (0.44), relación balanceada entre ácidos
 ]
 ```
-Para realizar futuras pruebas puedes seleccionar otras para ver como influyen
+>Para realizar futuras pruebas puedes seleccionar otras variables para ver como influyen en el entrenamiento.
+
 ---
 
 ## 🧪 Modelado 
 
 El proyecto también incluye una sección opcional donde se prepara el dataset para modelado (normalización, selección de características), permitiendo probar algoritmos de regresión o clasificación como regresión logística, árbol de decisión, etc.
+### 🔄 Normalización
+
+Dado que los datos presentan cierto sesgo en su distribución y considerando que la clasificación de un vino como "bueno" o "malo" se basa en criterios de cata que no están completamente documentados, se tomó la decisión de normalizar las variables seleccionadas para el entrenamiento y la prueba del modelo.
+
+Para ello, se aplicó la técnica de Z-score, que permite escalar las variables en función de su media y desviación estándar, asegurando que todas tengan una distribución centrada y comparable. Esto mejora la estabilidad y el desempeño de los algoritmos de aprendizaje automático.
+
+### 🧪 Entrenamiento y Prueba
+Los datos fueron divididos en dos subconjuntos: un 80% se destinó al entrenamiento del modelo y el 20% restante se reservó para pruebas. Esta división se realizó de forma aleatoria y sin aplicar criterios adicionales, con el objetivo de evaluar el desempeño del modelo de manera objetiva sobre datos no vistos durante el entrenamiento.
+
+## 🤖 Comparación de Modelos de Clasificación
+
+Para determinar qué algoritmo ofrece un mejor desempeño en la predicción de la calidad del vino, se entrenaron y evaluaron varios modelos de clasificación. La métrica utilizada para la comparación fue la **precisión (accuracy)**.
+
+### 🔍 Modelos evaluados
+
+- **Regresión Logística**
+- **Máquinas de Vectores de Soporte (SVM)**
+- **Árbol de Decisión**
+- **Bosque Aleatorio (Random Forest)**
+- **K-Nearest Neighbors (KNN)**
+
+Cada modelo fue entrenado con los mismos datos normalizados y utilizando la misma división entre entrenamiento y prueba (80/20), sin aplicar técnicas de ajuste fino (tuning) en esta etapa inicial.
+
+### 📊 Resultados obtenidos
+
+| Modelo              | Precisión (Accuracy) |
+|---------------------|----------------------|
+| Regresión Logística | 0.7568               |
+| SVM                 | 0.7645               |
+| Árbol de Decisión   | 0.7876               |
+| Bosque Aleatorio    | **0.8070**           |
+| KNN                 | 0.7568               |
+
+> **Nota**: Se generó una advertencia (`FutureWarning`) durante la ejecución con Bosque Aleatorio, relacionada con la concatenación de DataFrames. Esta no afecta el cálculo del resultado.
+
+### 🏆 Modelo seleccionado
+
+El modelo con mejor precisión fue el **Bosque Aleatorio (Random Forest)**, alcanzando un valor de **0.8070**. Dado su rendimiento superior, se considera como el mejor candidato para una posterior etapa de ajuste de hiperparámetros y evaluación final.
 
 ---
+## 🌲 Configuración del Modelo Random Forest
+
+Para la etapa de clasificación se seleccionó el algoritmo **Random Forest**, debido a su capacidad de manejar conjuntos de datos complejos, evitar el sobreajuste y ofrecer buenos resultados sin requerir una gran cantidad de ajuste fino.
+
+### 🔧 Hiperparámetros Seleccionados
+
+Se eligieron los siguientes hiperparámetros para mejorar la precisión y robustez del modelo:
+
+- **`n_estimators=200`**: Se utilizaron 200 árboles para aumentar la estabilidad de las predicciones. Un mayor número de árboles tiende a reducir el error de generalización.
+
+- **`criterion='gini'`**: Se empleó el índice de Gini como medida de impureza. Es más eficiente computacionalmente que la entropía, y en la mayoría de los casos ofrece resultados similares.
+
+- **`max_depth=20`**: Limitar la profundidad de los árboles a 20 ayuda a evitar el sobreajuste. Esto permite que los árboles capturen patrones complejos sin llegar a memorizar los datos de entrenamiento.
+
+- **`min_samples_split=10`**: Se establece un umbral mínimo de 10 muestras para dividir un nodo, lo cual obliga al árbol a generalizar más y evita divisiones innecesarias por ruido.
+
+- **`min_samples_leaf=1`**: Se permite como mínimo una muestra por nodo hoja. Esto da flexibilidad al modelo para ajustar detalles finos sin ser demasiado restrictivo.
+
+- **`max_features='sqrt'`**: Esta configuración selecciona un subconjunto aleatorio de variables (raíz cuadrada del total) para evaluar en cada división de nodo. Esta aleatoriedad **reduce la correlación entre los árboles** del bosque, mejorando la generalización del modelo. Aunque se eliminaron los valores atípicos, esta estrategia sigue siendo útil para reducir la varianza del modelo.
+
+- **`random_state=42`**: Se fija una semilla para asegurar que los resultados sean reproducibles.
+
+- **`n_jobs=-1`**: Utiliza todos los núcleos disponibles del procesador, acelerando el entrenamiento mediante paralelización.
+
+---
+
+## 📈 Resultados Obtenidos
+
+Tras entrenar el modelo con los parámetros anteriores y evaluar sobre el conjunto de prueba (20% de los datos), se obtuvieron los siguientes resultados:
+
+### ✅ Precisión General del Modelo
+
+**Accuracy (Precisión):** `0.80`  
+Esto significa que el 80% de las predicciones coinciden con los valores reales de calidad del vino.
+
+---
+
+### 📊 Reporte de Clasificación
+
+| Clase | Precisión | Recall | F1-Score | Soporte |
+|-------|-----------|--------|----------|---------|
+| 1     | 0.82      | 0.72   | 0.77     | 116     |
+| 2     | 0.79      | 0.87   | 0.83     | 143     |
+
+- La **clase 1** (vino de calidad inferior) presenta una mayor precisión, aunque menor recall, lo que indica que algunos casos no fueron detectados correctamente.
+- La **clase 2** (vino de calidad superior) tiene mayor recall, es decir, se detecta la mayoría de los vinos de buena calidad, aunque con menor precisión.
+
+---
+
+### 🧮 Matriz de Confusión
+
+ ![Matriz de confusión 4](images/confusion.png)
+
+- Se clasificaron correctamente 84 vinos de clase 1 y 124 vinos de clase 2.
+- Hubo 32 vinos de clase 1 mal clasificados como clase 2, y 19 vinos de clase 2 mal clasificados como clase 1.
+
+---
+
+### 📝 Conclusión
+
+La configuración del modelo Random Forest con los hiperparámetros seleccionados resultó efectiva para esta tarea de clasificación binaria. Se obtuvo una precisión general del 80%, con buenos valores de f1-score para ambas clases. Se confirma que la eliminación de valores atípicos, junto con la selección cuidadosa de parámetros como `max_depth`, `min_samples_split` y `max_features='sqrt'`, mejora la capacidad predictiva del modelo sin sobreajustarlo.
+
 
 ## 🛠 Herramientas utilizadas
 
@@ -231,4 +331,15 @@ Puedes abrir directamente el notebook en Google Colab:
 O clonarlo localmente:
 
 ```bash
-git clone https://github.com/tu_usuario/wine-quality-eda.git
+git clone https://github.com/Jhonyd55/Wine_Analysis.git
+```
+## 🙏 Agradecimientos
+
+Agradecemos profundamente el tiempo dedicado a revisar este análisis. Esperamos que los resultados y conclusiones presentadas aquí sean de utilidad y sirvan como una guía clara y práctica para futuras investigaciones o análisis relacionados.  
+
+Este trabajo fue elaborado con el propósito de ofrecer una visión clara y fundamentada sobre el comportamiento de los vinos en función de sus características químicas, apoyándonos en técnicas de ciencia de datos y modelos de aprendizaje automático.  
+
+Quedamos a disposición para cualquier sugerencia o consulta adicional.
+
+¡Gracias por su atención!
+
