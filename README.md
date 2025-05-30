@@ -159,7 +159,7 @@ A continuación, se presenta el análisis de correlación utilizando un mapa de 
 #### ✅ Relaciones fuertes positivas
 
 - **`fixed_acidity` y `citric_acid`** (**0.69**): Existe una fuerte relación positiva. A mayor acidez fija, mayor es también el contenido de ácido cítrico.
-- **`residual_sugar` y `dilucion_efecto`** (**1.00**): Relación perfecta, probablemente una es derivada de la otra. Se recomienda eliminar una para evitar multicolinealidad.
+- **`residual_sugar` y `dilucion_efecto`** (**1.00**): Relación perfecta,ya que una es derivada de la otra. Se recomienda eliminar una para evitar multicolinealidad.
 - **`free_sulfur_dioxide` y `total_sulfur_dioxide`** (**0.64**): El dióxido de azufre total incluye el libre, lo que justifica esta relación.
 - **`alcohol` y `inv_density`** (**0.55**) y relación negativa con `density` (**-0.55**): El contenido de alcohol reduce la densidad del vino, lo cual es coherente.
 
@@ -177,8 +177,8 @@ A continuación, se presenta el análisis de correlación utilizando un mapa de 
 
 #### 📌 Otras observaciones
 
-- Las variables derivadas como `alcohol_density`, `score_equilibrio` y `acidez_ratio` muestran correlaciones relevantes con variables originales. Pueden ser útiles, pero se debe revisar la **multicolinealidad**.
-- Algunas variables como `chlorides` y `residual_sugar` tienen correlaciones muy bajas con la calidad, lo que indica baja relevancia para modelos predictivos.
+- Las variables derivadas como `alcohol_density`, `score_equilibrio` y `acidez_ratio` muestran correlaciones relevantes con variables originales. Pueden ser útiles, pero se debe revisar la **multicolinealidad** es decir eliminar las variables originales o estas.
+- Algunas variables como `chlorides` y `residual_sugar` tienen correlaciones muy bajas con la calidad, lo que indica baja relevancia para modelos predictivos podemos omitirlas.
 
 ### 🧠 Recomendaciones
 
@@ -188,9 +188,22 @@ A continuación, se presenta el análisis de correlación utilizando un mapa de 
 
 ---
 
-Este análisis proporciona una base sólida para la selección de características en futuras etapas de modelado predictivo.
+Este análisis proporciona una base sólida para la selección de características en futuras etapas de modelado predictivo. Por lo que para este analisis utilizaremos las siguientes variables.
 
-
+```python
+variables_select= [
+    'alcohol',              # Alta correlación positiva con quality (0.44)
+    'sulphates',            # Correlación moderada positiva con quality (0.27)
+    'volatile_acidity',     # Correlación negativa con quality (-0.39)
+    'citric_acid',          # Correlación leve positiva (0.09), pero relacionada con acidez
+    'fixed_acidity',        # Correlación leve positiva (0.12), útil junto con pH
+    'pH',                   # Relacionada con acidez, aunque la correlación directa es baja
+    'alcohol_density',      # Derivada útil, correlación positiva (0.48)
+    'score_equilibrio',     # Derivada con correlación (0.48), útil para modelos
+    'acidez_ratio',         # Buena correlación (0.44), relación balanceada entre ácidos
+]
+```
+Para realizar futuras pruebas puedes seleccionar otras para ver como influyen
 ---
 
 ## 🧪 Modelado 
